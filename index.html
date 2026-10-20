@@ -1,9 +1,17 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full bg-slate-50 text-slate-800">
+<html lang="es" class="h-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-200">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Material de Estudio - Examen Teórico Licencia de Conducir (Florencio Varela)</title>
+  
+  <!-- PWA & Mobile Web App Meta -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -34,54 +42,90 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚗</text></svg>">
 </head>
-<body class="min-h-full flex flex-col bg-slate-100 text-slate-800 antialiased selection:bg-brand-500 selection:text-white pb-24">
+<body class="min-h-full flex flex-col bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 antialiased selection:bg-brand-500 selection:text-white pb-24">
+
+  <!-- Toast Flotante de Logros Desbloqueados -->
+  <div id="achievement-toast" class="achievement-toast fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold px-5 py-3 rounded-2xl shadow-2xl border border-amber-300 flex items-center gap-3">
+    <span class="text-2xl" id="toast-icon">🏆</span>
+    <div>
+      <div class="text-[11px] uppercase tracking-wider text-amber-950/80 font-black">¡Nuevo Logro Desbloqueado!</div>
+      <div class="text-sm font-black" id="toast-title">Primer Paso</div>
+    </div>
+  </div>
 
   <!-- Navbar / Header -->
-  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
+  <header class="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur border-b border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
         
         <!-- Logo y Título -->
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+        <div class="flex items-center gap-2.5 sm:gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-brand-500/20 shrink-0">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
             </svg>
           </div>
           <div>
             <div class="flex items-center gap-2">
-              <h1 class="text-lg font-bold tracking-tight text-slate-900 leading-none">Examen Teórico Vial</h1>
-              <span class="text-[10px] font-bold px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full">117 Preguntas</span>
+              <h1 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white leading-none">Examen Teórico Vial</h1>
+              <span class="text-[10px] font-bold px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 rounded-full">117 Preguntas</span>
             </div>
-            <p class="text-xs text-slate-500 font-medium">Florencio Varela • Licencia de Conducir</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Florencio Varela • Licencia Oficial</p>
           </div>
         </div>
 
-        <!-- Botones de Pestañas Principales -->
-        <nav class="flex items-center gap-1 sm:gap-2 p-1 bg-slate-100 rounded-xl border border-slate-200/80">
-          <button id="tab-read-btn" onclick="switchTab('read')" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center gap-2 bg-white text-brand-600 shadow-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-            </svg>
+        <!-- Botones de Utilidades: Cifras Clave, Logros, Dark Mode -->
+        <div class="flex items-center gap-1.5 sm:gap-2">
+          
+          <!-- Botón Cifras Clave (Machete) -->
+          <button onclick="openCheatSheetModal()" class="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition" title="Ver resumen de cifras y velocidades">
+            <span>📋</span>
+            <span class="hidden md:inline">Cifras Clave</span>
+          </button>
+
+          <!-- Botón Logros / Medallas -->
+          <button onclick="openAchievementsModal()" class="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition" title="Ver tus logros y medallas">
+            <span>🏆</span>
+            <span id="header-achievements-count" class="hidden sm:inline">Logros</span>
+          </button>
+
+          <!-- Botón Modo Oscuro -->
+          <button onclick="toggleDarkMode()" id="dark-mode-btn" class="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition" title="Alternar modo oscuro">
+            <span id="dark-mode-icon">🌙</span>
+          </button>
+
+        </div>
+
+      </div>
+
+      <!-- Barra de Pestañas Inferior del Header -->
+      <div class="py-2 flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80">
+        <nav class="flex items-center gap-1 sm:gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200/80 dark:border-slate-700">
+          <button id="tab-read-btn" onclick="switchTab('read')" class="tab-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center gap-1.5 bg-white dark:bg-slate-900 text-brand-600 dark:text-brand-400 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
             <span>Preguntas y Audio</span>
           </button>
           
-          <button id="tab-practice-btn" onclick="switchTab('practice')" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition-all duration-200 flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-            </svg>
-            <span>Practicar (Test)</span>
+          <button id="tab-practice-btn" onclick="switchTab('practice')" class="tab-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all duration-200 flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+            <span>Simulador & Práctica</span>
           </button>
 
-          <button id="tab-flashcards-btn" onclick="switchTab('flashcards')" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition-all duration-200 flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-            </svg>
+          <button id="tab-flashcards-btn" onclick="switchTab('flashcards')" class="tab-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all duration-200 flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
             <span class="hidden sm:inline">Tarjetas Rápidas</span>
             <span class="sm:hidden">Tarjetas</span>
           </button>
         </nav>
 
+        <!-- Indicador de Preparación General -->
+        <div class="hidden md:flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+          <span>Preparación:</span>
+          <div class="w-28 bg-slate-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
+            <div id="header-global-progress-bar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+          <span id="header-global-progress-text" class="font-bold text-slate-700 dark:text-slate-200">0%</span>
+        </div>
       </div>
     </div>
   </header>
@@ -174,12 +218,12 @@
       </div>
 
       <!-- Barra de Filtros, Búsqueda, Preguntas Aprendidas y Estadísticas -->
-      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4 transition-colors">
         
         <!-- Buscador -->
         <div class="relative w-full md:w-80">
           <input type="text" id="search-input" oninput="filterQuestions()" placeholder="Buscar palabras clave (ej: alcoholemia, niebla)..." 
-            class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+            class="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white dark:focus:bg-slate-800 transition">
           <svg class="w-5 h-5 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
@@ -189,7 +233,7 @@
         <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
           
           <!-- Filtro por Categorías -->
-          <select id="category-filter" onchange="filterQuestions()" class="bg-slate-50 border border-slate-200 text-slate-700 font-medium text-xs sm:text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer">
+          <select id="category-filter" onchange="filterQuestions()" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-medium text-xs sm:text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer">
             <option value="all">📚 Todas las Categorías (117)</option>
             <option value="Normas Generales">Normas Generales</option>
             <option value="Prioridades de Paso">Prioridades de Paso</option>
@@ -205,20 +249,20 @@
           </select>
 
           <!-- Toggle Ocultar las que ya sé -->
-          <button id="toggle-hide-learned-btn" onclick="toggleHideLearned()" class="px-3 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm font-semibold bg-slate-50 hover:bg-slate-100 text-slate-700 whitespace-nowrap transition flex items-center gap-1.5" title="Ocultar las preguntas que marcaste como ya sabidas">
+          <button id="toggle-hide-learned-btn" onclick="toggleHideLearned()" class="px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs sm:text-sm font-semibold bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 whitespace-nowrap transition flex items-center gap-1.5" title="Ocultar las preguntas que marcaste como ya sabidas">
             <span id="hide-learned-icon">👁️</span>
             <span id="hide-learned-text">Ocultar las que ya sé (<span id="learned-count-badge">0</span>)</span>
           </button>
 
           <!-- Toggle Solo Señales -->
-          <button id="toggle-signs-btn" onclick="toggleSignsFilter()" class="px-3 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm font-semibold bg-slate-50 hover:bg-slate-100 text-slate-700 whitespace-nowrap transition flex items-center gap-1.5">
+          <button id="toggle-signs-btn" onclick="toggleSignsFilter()" class="px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs sm:text-sm font-semibold bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 whitespace-nowrap transition flex items-center gap-1.5">
             <span>🛑 Solo Señales</span>
           </button>
         </div>
 
         <!-- Contador de resultados -->
-        <div class="text-xs text-slate-500 font-semibold shrink-0">
-          Mostrando <span id="filtered-count" class="text-brand-600 font-bold">117</span> de 117
+        <div class="text-xs text-slate-500 dark:text-slate-400 font-semibold shrink-0">
+          Mostrando <span id="filtered-count" class="text-brand-600 dark:text-brand-400 font-bold">117</span> de 117
         </div>
       </div>
 
@@ -230,48 +274,90 @@
     </section>
 
     <!-- ========================================== -->
-    <!-- PESTAÑA 2: MODO PRÁCTICA / SIMULACRO TEST  -->
+    <!-- PESTAÑA 2: MODO PRÁCTICA / SIMULADOR EXAMEN -->
     <!-- ========================================== -->
     <section id="view-practice" class="hidden space-y-6">
       
       <!-- Pantalla de Configuración Inicial del Test -->
-      <div id="quiz-setup" class="max-w-2xl mx-auto bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200">
-        <div class="text-center space-y-2 mb-8">
-          <div class="w-16 h-16 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
+      <div id="quiz-setup" class="max-w-2xl mx-auto bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-800 transition-colors">
+        
+        <div class="text-center space-y-2 mb-6">
+          <div class="w-16 h-16 bg-brand-50 dark:bg-brand-950 text-brand-600 dark:text-brand-400 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
           </div>
-          <h2 class="text-2xl font-black text-slate-900 tracking-tight">Simulacro de Examen Teórico</h2>
-          <p class="text-slate-600 text-sm max-w-md mx-auto">
-            Pon a prueba tus conocimientos con preguntas aleatorias basadas en el examen oficial de Florencio Varela.
+          <h2 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Simulador de Examen Teórico</h2>
+          <p class="text-slate-600 dark:text-slate-400 text-sm max-w-md mx-auto">
+            Elige el formato de evaluación que deseas practicar:
           </p>
         </div>
 
-        <div class="space-y-6">
-          <!-- Selección de Modo / Cantidad -->
-          <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Cantidad de Preguntas</label>
+        <!-- Selector de Tipo de Evaluación (4 Modos) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          
+          <!-- Modo A: Entrenamiento Rápido -->
+          <div onclick="selectQuizMode('practice')" id="mode-card-practice" class="cursor-pointer p-4 rounded-2xl border-2 border-brand-500 bg-brand-50/70 dark:bg-brand-950/40 transition">
+            <div class="flex items-center justify-between mb-1">
+              <span class="font-bold text-slate-900 dark:text-white text-sm">💡 Entrenamiento Rápido</span>
+              <span class="text-xs bg-brand-600 text-white px-2 py-0.5 rounded-full font-bold">Activo</span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Feedback instantáneo con explicación en cada pregunta que respondes.</p>
+          </div>
+
+          <!-- Modo B: Simulacro Oficial con Reloj -->
+          <div onclick="selectQuizMode('real_exam')" id="mode-card-real_exam" class="cursor-pointer p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 hover:border-brand-400 transition">
+            <div class="flex items-center justify-between mb-1">
+              <span class="font-bold text-slate-900 dark:text-white text-sm">⏱️ Simulacro Oficial</span>
+              <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full font-bold">30 min</span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Sin ver respuestas hasta el final. Reglas reales de la municipalidad.</p>
+          </div>
+
+          <!-- Modo C: Banco de Errores ("Mis Preguntas Difíciles") -->
+          <div onclick="selectQuizMode('mistakes')" id="mode-card-mistakes" class="cursor-pointer p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 hover:border-brand-400 transition">
+            <div class="flex items-center justify-between mb-1">
+              <span class="font-bold text-slate-900 dark:text-white text-sm">❌ Banco de Errores</span>
+              <span id="mistakes-mode-badge" class="text-xs bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300 px-2 py-0.5 rounded-full font-bold">0 preguntas</span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Practica solo las preguntas que fallaste en exámenes anteriores.</p>
+          </div>
+
+          <!-- Modo D: Modo Supervivencia / Contrarreloj -->
+          <div onclick="selectQuizMode('survival')" id="mode-card-survival" class="cursor-pointer p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 hover:border-brand-400 transition">
+            <div class="flex items-center justify-between mb-1">
+              <span class="font-bold text-slate-900 dark:text-white text-sm">🔥 Modo Supervivencia</span>
+              <span class="text-xs bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full font-bold">❤️❤️❤️</span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">15 segundos por pregunta, 3 vidas y récord de racha máxima.</p>
+          </div>
+
+        </div>
+
+        <div class="space-y-5">
+          <!-- Selección de Cantidad (Visible para Modo Entrenamiento / Oficial) -->
+          <div id="quiz-length-section">
+            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Cantidad de Preguntas</label>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-              <button type="button" onclick="selectQuizLength(10)" class="quiz-len-btn p-3 rounded-xl border border-slate-200 text-center font-bold text-slate-700 hover:border-brand-500 hover:text-brand-600 transition" data-len="10">
-                10 Preguntas<br><span class="text-[11px] font-normal text-slate-400">Rápido (3 min)</span>
+              <button type="button" onclick="selectQuizLength(10)" class="quiz-len-btn p-3 rounded-xl border border-slate-200 dark:border-slate-700 text-center font-bold text-slate-700 dark:text-slate-300 hover:border-brand-500 transition" data-len="10">
+                10 Preguntas<br><span class="text-[11px] font-normal text-slate-400">Rápido</span>
               </button>
-              <button type="button" onclick="selectQuizLength(20)" class="quiz-len-btn p-3 rounded-xl border border-slate-200 text-center font-bold text-slate-700 hover:border-brand-500 hover:text-brand-600 transition" data-len="20">
-                20 Preguntas<br><span class="text-[11px] font-normal text-slate-400">Estándar (6 min)</span>
+              <button type="button" onclick="selectQuizLength(20)" class="quiz-len-btn p-3 rounded-xl border border-slate-200 dark:border-slate-700 text-center font-bold text-slate-700 dark:text-slate-300 hover:border-brand-500 transition" data-len="20">
+                20 Preguntas<br><span class="text-[11px] font-normal text-slate-400">Estándar</span>
               </button>
-              <button type="button" onclick="selectQuizLength(40)" class="quiz-len-btn p-3 rounded-xl border-2 border-brand-500 bg-brand-50 text-brand-700 text-center font-bold transition" data-len="40">
+              <button type="button" onclick="selectQuizLength(40)" class="quiz-len-btn p-3 rounded-xl border-2 border-brand-500 bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-300 text-center font-bold transition" data-len="40">
                 40 Preguntas<br><span class="text-[11px] font-normal text-brand-500">Examen Completo</span>
               </button>
-              <button type="button" onclick="selectQuizLength(117)" class="quiz-len-btn p-3 rounded-xl border border-slate-200 text-center font-bold text-slate-700 hover:border-brand-500 hover:text-brand-600 transition" data-len="117">
+              <button type="button" onclick="selectQuizLength(117)" class="quiz-len-btn p-3 rounded-xl border border-slate-200 dark:border-slate-700 text-center font-bold text-slate-700 dark:text-slate-300 hover:border-brand-500 transition" data-len="117">
                 117 Todas<br><span class="text-[11px] font-normal text-slate-400">Maratón Total</span>
               </button>
             </div>
           </div>
 
-          <!-- Filtro Opcional de Categoría para el Quiz -->
-          <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Filtrar por Tema (Opcional)</label>
-            <select id="quiz-category-select" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-brand-500 focus:bg-white">
+          <!-- Filtro Opcional de Categoría -->
+          <div id="quiz-cat-section">
+            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Filtrar por Tema (Opcional)</label>
+            <select id="quiz-category-select" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-brand-500">
               <option value="all">Todas las categorías mezcladas (Recomendado)</option>
               <option value="Normas Generales">Normas Generales</option>
               <option value="Prioridades de Paso">Prioridades de Paso</option>
@@ -283,38 +369,50 @@
             </select>
           </div>
 
-          <!-- Opciones adicionales -->
-          <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-sm">
-            <span class="font-medium text-slate-700">Pronunciar automáticamente cada pregunta en voz alta</span>
-            <input type="checkbox" id="quiz-auto-speech" class="w-5 h-5 text-brand-600 rounded focus:ring-brand-500 cursor-pointer">
-          </div>
-
           <button onclick="startQuiz()" class="w-full py-4 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-2xl shadow-lg shadow-brand-600/30 active:scale-[0.99] transition flex items-center justify-center gap-2 text-base">
-            <span>Iniciar Práctica Ahora</span>
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-            </svg>
+            <span id="start-btn-label">Iniciar Evaluación</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
           </button>
         </div>
       </div>
 
       <!-- Pantalla Activa de la Pregunta del Test -->
-      <div id="quiz-active" class="hidden max-w-3xl mx-auto space-y-6">
+      <div id="quiz-active" class="hidden max-w-3xl mx-auto space-y-5">
         
-        <!-- Barra de Progreso y Marcador -->
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex items-center justify-between gap-4">
-          <div class="flex-1">
-            <div class="flex justify-between text-xs font-bold text-slate-500 mb-1.5">
-              <span>Progreso: <span id="quiz-current-num" class="text-slate-800">1</span> de <span id="quiz-total-num">20</span></span>
+        <!-- Barra de Progreso, Temporizador y Marcadores -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4 transition-colors">
+          <div class="flex-1 min-w-[200px]">
+            <div class="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">
+              <span>Pregunta <span id="quiz-current-num" class="text-slate-800 dark:text-slate-100">1</span> de <span id="quiz-total-num">20</span></span>
               <span id="quiz-percent-text">5%</span>
             </div>
-            <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+            <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
               <div id="quiz-progress-bar" class="bg-gradient-to-r from-brand-500 to-indigo-600 h-2.5 rounded-full transition-all duration-300" style="width: 5%"></div>
             </div>
           </div>
 
-          <!-- Puntuación rápida -->
-          <div class="flex items-center gap-3 pl-4 border-l border-slate-200 text-xs font-bold">
+          <!-- Modo Supervivencia: Vidas y Temporizador de 15s -->
+          <div id="survival-indicators" class="hidden items-center gap-3">
+            <div id="survival-lives" class="text-xl tracking-widest flex items-center gap-1">
+              <span>❤️</span><span>❤️</span><span>❤️</span>
+            </div>
+            <div class="px-3 py-1 bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200 rounded-xl text-xs font-black flex items-center gap-1">
+              <span>⏱️</span>
+              <span id="survival-timer-sec">15</span>s
+            </div>
+            <div class="text-xs font-bold text-slate-500">
+              Racha: <span id="survival-streak" class="text-brand-600 dark:text-brand-400 font-black">0</span>
+            </div>
+          </div>
+
+          <!-- Modo Oficial: Temporizador Regresivo de 30 min -->
+          <div id="real-exam-timer-box" class="hidden items-center gap-1.5 px-3 py-1.5 bg-rose-50 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-200 rounded-xl font-mono text-sm font-black">
+            <span>⏱️</span>
+            <span id="real-exam-timer-text">30:00</span>
+          </div>
+
+          <!-- Puntuación rápida (En Modo Entrenamiento) -->
+          <div id="training-score-box" class="flex items-center gap-3 pl-3 border-l border-slate-200 dark:border-slate-700 text-xs font-bold">
             <span class="text-emerald-600 flex items-center gap-1">
               <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
               <span id="quiz-score-correct">0</span>
@@ -327,20 +425,20 @@
         </div>
 
         <!-- Tarjeta de Pregunta -->
-        <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-6">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-800 space-y-6 transition-colors">
           
           <div class="flex items-center justify-between gap-3">
-            <span id="quiz-question-category" class="badge-tag bg-brand-50 text-brand-700 border border-brand-100">
+            <span id="quiz-question-category" class="badge-tag bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-300 border border-brand-100 dark:border-brand-900">
               Categoría
             </span>
-            <button id="quiz-btn-speak" onclick="speakCurrentQuizQuestion()" class="p-2.5 rounded-xl bg-slate-100 hover:bg-brand-50 text-slate-700 hover:text-brand-600 transition flex items-center gap-1.5 text-xs font-semibold" title="Escuchar pregunta">
+            <button id="quiz-btn-speak" onclick="speakCurrentQuizQuestion()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-50 dark:hover:bg-brand-950 text-slate-700 dark:text-slate-300 hover:text-brand-600 transition flex items-center gap-1.5 text-xs font-semibold" title="Escuchar pregunta">
               <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clip-rule="evenodd"/></svg>
               <span>Escuchar</span>
             </button>
           </div>
 
           <!-- Texto de la pregunta -->
-          <h2 id="quiz-question-text" class="text-xl sm:text-2xl font-bold text-slate-900 leading-snug">
+          <h2 id="quiz-question-text" class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white leading-snug">
             Cargando pregunta...
           </h2>
 
@@ -352,24 +450,24 @@
             <!-- Botones inyectados por JS -->
           </div>
 
-          <!-- Feedback explicativo tras responder -->
+          <!-- Feedback explicativo tras responder (Solo en modo entrenamiento/supervivencia) -->
           <div id="quiz-feedback-box" class="hidden p-4 rounded-2xl border transition-all duration-300">
             <div class="flex items-start gap-3">
               <div id="quiz-feedback-icon" class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"></div>
               <div>
                 <h4 id="quiz-feedback-title" class="font-bold text-sm"></h4>
-                <p id="quiz-feedback-desc" class="text-xs sm:text-sm mt-1 text-slate-700"></p>
+                <p id="quiz-feedback-desc" class="text-xs sm:text-sm mt-1 text-slate-700 dark:text-slate-300"></p>
               </div>
             </div>
           </div>
 
-          <!-- Botón Siguiente / Salir -->
-          <div class="flex items-center justify-between pt-4 border-t border-slate-100">
-            <button onclick="exitQuiz()" class="text-xs font-semibold text-slate-400 hover:text-slate-600 transition">
+          <!-- Botón Siguiente / Entregar -->
+          <div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
+            <button onclick="exitQuiz()" class="text-xs font-semibold text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition">
               ← Abandonar examen
             </button>
             <button id="quiz-next-btn" onclick="nextQuizQuestion()" disabled class="px-6 py-3 bg-brand-600 hover:bg-brand-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-md transition flex items-center gap-2 text-sm">
-              <span>Siguiente</span>
+              <span id="quiz-next-btn-text">Siguiente</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </button>
           </div>
@@ -379,30 +477,30 @@
       </div>
 
       <!-- Pantalla de Resultados Finales -->
-      <div id="quiz-results" class="hidden max-w-2xl mx-auto bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 text-center space-y-6">
+      <div id="quiz-results" class="hidden max-w-2xl mx-auto bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-800 text-center space-y-6 transition-colors">
         
         <div id="results-badge-icon" class="w-20 h-20 rounded-full mx-auto flex items-center justify-center shadow-lg text-3xl">
           🏆
         </div>
 
         <div>
-          <h2 id="results-title" class="text-2xl font-black text-slate-900">¡Examen Finalizado!</h2>
-          <p id="results-subtitle" class="text-sm text-slate-600 mt-1">Has completado el simulacro de evaluación teórica.</p>
+          <h2 id="results-title" class="text-2xl font-black text-slate-900 dark:text-white">¡Examen Finalizado!</h2>
+          <p id="results-subtitle" class="text-sm text-slate-600 dark:text-slate-400 mt-1">Has completado la evaluación.</p>
         </div>
 
         <!-- Tarjetas de métricas -->
-        <div class="grid grid-cols-3 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
+        <div class="grid grid-cols-3 gap-3 p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700">
           <div>
-            <div class="text-xs text-slate-500 font-semibold uppercase">Puntaje</div>
-            <div id="results-percentage" class="text-2xl font-black text-brand-600">85%</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase">Puntaje</div>
+            <div id="results-percentage" class="text-2xl font-black text-brand-600 dark:text-brand-400">85%</div>
           </div>
           <div>
-            <div class="text-xs text-slate-500 font-semibold uppercase">Correctas</div>
-            <div id="results-correct-count" class="text-2xl font-black text-emerald-600">17</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase">Correctas</div>
+            <div id="results-correct-count" class="text-2xl font-black text-emerald-600 dark:text-emerald-400">17</div>
           </div>
           <div>
-            <div class="text-xs text-slate-500 font-semibold uppercase">Incorrectas</div>
-            <div id="results-incorrect-count" class="text-2xl font-black text-rose-600">3</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase">Incorrectas</div>
+            <div id="results-incorrect-count" class="text-2xl font-black text-rose-600 dark:text-rose-400">3</div>
           </div>
         </div>
 
@@ -411,9 +509,16 @@
           <!-- Dinámico -->
         </div>
 
+        <!-- Botón Ver Certificado (Solo si aprobó) -->
+        <div id="certificate-btn-wrapper" class="hidden">
+          <button onclick="openCertificateModal()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black rounded-xl shadow-md transition flex items-center justify-center gap-2">
+            <span>🎖️ Ver y Descargar Certificado de Aprobación</span>
+          </button>
+        </div>
+
         <!-- Lista de fallos para repaso -->
-        <div id="results-mistakes-container" class="hidden text-left space-y-3 pt-4 border-t border-slate-200">
-          <h3 class="text-sm font-bold text-slate-800">Preguntas a Repasar:</h3>
+        <div id="results-mistakes-container" class="hidden text-left space-y-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+          <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200">Preguntas a Repasar:</h3>
           <div id="results-mistakes-list" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
         </div>
 
@@ -422,7 +527,7 @@
           <button onclick="restartQuiz()" class="flex-1 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md transition">
             🔄 Repetir Examen
           </button>
-          <button onclick="switchTab('read')" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition">
+          <button onclick="switchTab('read')" class="flex-1 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl transition">
             📖 Volver al Material de Estudio
           </button>
         </div>
@@ -440,14 +545,14 @@
         
         <!-- Header de la Flashcard -->
         <div class="flex items-center justify-between">
-          <div class="text-xs font-bold text-slate-500">
-            Tarjeta <span id="fc-current-index" class="text-brand-600 font-black">1</span> de <span id="fc-total-count">117</span>
+          <div class="text-xs font-bold text-slate-500 dark:text-slate-400">
+            Tarjeta <span id="fc-current-index" class="text-brand-600 dark:text-brand-400 font-black">1</span> de <span id="fc-total-count">117</span>
           </div>
           <div class="flex items-center gap-2">
-            <button onclick="shuffleFlashcards()" class="px-2.5 py-1 text-xs font-semibold bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 transition" title="Mezclar tarjetas">
+            <button onclick="shuffleFlashcards()" class="px-2.5 py-1 text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition" title="Mezclar tarjetas">
               🔀 Mezclar
             </button>
-            <button onclick="speakCurrentFlashcard()" class="px-2.5 py-1 text-xs font-semibold bg-white border border-slate-200 rounded-lg text-brand-600 hover:bg-brand-50 transition flex items-center gap-1">
+            <button onclick="speakCurrentFlashcard()" class="px-2.5 py-1 text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-brand-600 dark:text-brand-400 hover:bg-brand-50 transition flex items-center gap-1">
               🔊 Escuchar
             </button>
           </div>
@@ -458,13 +563,13 @@
           <div id="active-flashcard" class="flashcard flashcard-inner w-full h-full shadow-lg rounded-3xl">
             
             <!-- Cara Frontal (Pregunta) -->
-            <div class="flashcard-front bg-white border-2 border-slate-200 p-6 sm:p-8 flex flex-col justify-between">
+            <div class="flashcard-front bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 p-6 sm:p-8 flex flex-col justify-between transition-colors">
               <div>
                 <div class="flex items-center justify-between mb-4">
-                  <span id="fc-category-badge" class="badge-tag bg-brand-50 text-brand-700">Categoría</span>
+                  <span id="fc-category-badge" class="badge-tag bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-300">Categoría</span>
                   <span class="text-xs text-slate-400 font-medium">Toca para voltear 🔄</span>
                 </div>
-                <h3 id="fc-question-text" class="text-lg sm:text-xl font-bold text-slate-900 leading-snug mt-2">
+                <h3 id="fc-question-text" class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white leading-snug mt-2">
                   ¿Pregunta?
                 </h3>
                 <div id="fc-signal-box" class="my-3"></div>
@@ -495,10 +600,10 @@
 
         <!-- Controles de Navegación de Flashcards -->
         <div class="flex items-center justify-between gap-3 pt-2">
-          <button onclick="prevFlashcard()" class="flex-1 py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold rounded-2xl shadow-sm transition flex items-center justify-center gap-1 text-sm">
+          <button onclick="prevFlashcard()" class="flex-1 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-2xl shadow-sm transition flex items-center justify-center gap-1 text-sm">
             ← Anterior
           </button>
-          <button onclick="flipFlashcard()" class="p-3 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-2xl transition" title="Girar">
+          <button onclick="flipFlashcard()" class="p-3 bg-brand-50 dark:bg-brand-950 hover:bg-brand-100 text-brand-700 dark:text-brand-300 rounded-2xl transition" title="Girar">
             🔄
           </button>
           <button onclick="nextFlashcard()" class="flex-1 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-2xl shadow-md transition flex items-center justify-center gap-1 text-sm">
@@ -515,7 +620,7 @@
   <!-- ======================================================== -->
   <!-- REPRODUCTOR FLOTANTE INFERIOR PERMANENTE (SIEMPRE VISIBLE) -->
   <!-- ======================================================== -->
-  <div id="floating-audio-bar" class="floating-player fixed bottom-3 sm:bottom-5 left-1/2 z-50 w-[95%] max-w-3xl bg-slate-900/95 backdrop-blur-md text-white px-4 py-3 sm:px-5 sm:py-3.5 rounded-2xl shadow-2xl border border-slate-700/80">
+  <div id="floating-audio-bar" class="floating-player fixed bottom-3 sm:bottom-5 left-1/2 z-50 w-[95%] max-w-3xl bg-slate-900/95 dark:bg-slate-900/98 backdrop-blur-md text-white px-4 py-3 sm:px-5 sm:py-3.5 rounded-2xl shadow-2xl border border-slate-700/80">
     <div class="flex items-center justify-between gap-3">
       
       <!-- Info de la pregunta que suena -->
@@ -590,12 +695,153 @@
     </div>
   </div>
 
+  <!-- ======================================================== -->
+  <!-- MODAL: CIFRAS CLAVE / MACHETE EXPRÉS                    -->
+  <!-- ======================================================== -->
+  <div id="modal-cheat-sheet" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 max-h-[85vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-4 border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">📋</span>
+          <h3 class="text-lg font-black text-slate-900 dark:text-white">Resumen de Cifras Clave (Machete)</h3>
+        </div>
+        <button onclick="closeCheatSheetModal()" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white text-xl">✕</button>
+      </div>
+
+      <div class="space-y-4 text-xs sm:text-sm">
+        
+        <!-- Alcoholemia -->
+        <div class="p-4 bg-amber-50 dark:bg-amber-950/40 rounded-2xl border border-amber-200 dark:border-amber-900/60">
+          <h4 class="font-bold text-amber-900 dark:text-amber-300 text-sm mb-2 flex items-center gap-1.5">
+            🍺 Límites de Alcoholemia
+          </h4>
+          <ul class="space-y-1.5 text-slate-700 dark:text-slate-300">
+            <li>• <strong>Automóvil particular:</strong> Máximo <strong>0.5 gr. por litro de sangre</strong> (Pregunta #6).</li>
+            <li>• <strong>Conductor profesional:</strong> <strong>0,0 gr. por litro</strong> (Tolerancia cero, Pregunta #81).</li>
+            <li>• <strong>Negativa al test:</strong> Constituye falta <strong>SIEMPRE</strong> (Pregunta #3).</li>
+          </ul>
+        </div>
+
+        <!-- Velocidades -->
+        <div class="p-4 bg-blue-50 dark:bg-blue-950/40 rounded-2xl border border-blue-200 dark:border-blue-900/60">
+          <h4 class="font-bold text-blue-900 dark:text-blue-300 text-sm mb-2 flex items-center gap-1.5">
+            ⚡ Velocidades Reglamentarias
+          </h4>
+          <ul class="space-y-1.5 text-slate-700 dark:text-slate-300">
+            <li>• <strong>Mínima en zona urbana:</strong> <strong>20 km/h</strong> (Pregunta #51).</li>
+            <li>• <strong>Paso a nivel (velocidad precautoria):</strong> <strong>20 km/h</strong> (Pregunta #57).</li>
+            <li>• <strong>Máxima en avenidas:</strong> <strong>60 km/h</strong> (Pregunta #43).</li>
+            <li>• <strong>Máxima en zona rural:</strong> <strong>110 km/h</strong> (Pregunta #48).</li>
+          </ul>
+        </div>
+
+        <!-- Plazos y Documentación -->
+        <div class="p-4 bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl border border-emerald-200 dark:border-emerald-900/60">
+          <h4 class="font-bold text-emerald-900 dark:text-emerald-300 text-sm mb-2 flex items-center gap-1.5">
+            📅 Plazos y Obligaciones
+          </h4>
+          <ul class="space-y-1.5 text-slate-700 dark:text-slate-300">
+            <li>• <strong>Cambio de domicilio:</strong> Plazo máximo de <strong>90 días</strong>, de lo contrario la licencia caduca (Preguntas #45 y #63).</li>
+            <li>• <strong>Condición de principiante:</strong> Obligatorio distintivo verde durante <strong>6 meses</strong> (Preguntas #54 y #68).</li>
+            <li>• <strong>Licencia vencida:</strong> NO se puede conducir, salvo que venza día inhábil (se traslada al primer día hábil, Pregunta #20).</li>
+          </ul>
+        </div>
+
+        <!-- Prioridades -->
+        <div class="p-4 bg-purple-50 dark:bg-purple-950/40 rounded-2xl border border-purple-200 dark:border-purple-900/60">
+          <h4 class="font-bold text-purple-900 dark:text-purple-300 text-sm mb-2 flex items-center gap-1.5">
+            🚦 Prioridades de Paso
+          </h4>
+          <ul class="space-y-1.5 text-slate-700 dark:text-slate-300">
+            <li>• <strong>En encrucijadas sin semáforos:</strong> 1° Avenida - 2° Calle - 3° Pasaje (Pregunta #26).</li>
+            <li>• <strong>Rotonda:</strong> Tiene prioridad el vehículo que ya está <strong>dentro de la calzada circular</strong> (Pregunta #15).</li>
+            <li>• <strong>Ingreso a autopista:</strong> Tiene prioridad <strong>el que ya circula por ella</strong> (Pregunta #58).</li>
+            <li>• <strong>Giro con semáforo verde:</strong> La prioridad es <strong>del peatón</strong> (Pregunta #12).</li>
+          </ul>
+        </div>
+
+      </div>
+
+      <button onclick="closeCheatSheetModal()" class="w-full mt-5 py-3 bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 text-white font-bold rounded-xl transition">
+        Entendido, volver
+      </button>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: LOGROS Y MEDALLAS                                -->
+  <!-- ======================================================== -->
+  <div id="modal-achievements" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 max-h-[85vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-4 border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">🏆</span>
+          <h3 class="text-lg font-black text-slate-900 dark:text-white">Mis Logros y Medallas</h3>
+        </div>
+        <button onclick="closeAchievementsModal()" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white text-xl">✕</button>
+      </div>
+
+      <div id="achievements-list-container" class="space-y-3">
+        <!-- Renderizado dinámico -->
+      </div>
+
+      <button onclick="closeAchievementsModal()" class="w-full mt-5 py-3 bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 text-white font-bold rounded-xl transition">
+        Cerrar
+      </button>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: CERTIFICADO DE APROBACIÓN                        -->
+  <!-- ======================================================== -->
+  <div id="modal-certificate" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white text-slate-900 w-full max-w-xl rounded-3xl p-8 shadow-2xl border-4 border-amber-400 relative">
+      <button onclick="closeCertificateModal()" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-800 text-xl font-bold">✕</button>
+
+      <div class="text-center space-y-4 border-2 border-dashed border-amber-300 p-6 rounded-2xl bg-amber-50/30">
+        <div class="text-4xl">🎓</div>
+        <div class="text-xs uppercase tracking-widest text-amber-800 font-bold">Constancia de Rendimiento Teórico</div>
+        <h2 class="text-2xl font-black tracking-tight text-slate-900">CERTIFICADO DE APROBACIÓN</h2>
+        
+        <p class="text-sm text-slate-600">Se hace constar que el aspirante ha completado satisfactoriamente el simulacro oficial de examen teórico:</p>
+        
+        <div class="py-2">
+          <input type="text" id="cert-user-name" placeholder="Escribe tu Nombre y Apellido" class="w-full text-center text-lg font-bold border-b-2 border-slate-400 focus:border-brand-600 outline-none bg-transparent pb-1">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 text-xs py-2 bg-white rounded-xl border border-slate-200">
+          <div>
+            <span class="text-slate-500">Puntaje Obtenido:</span>
+            <div id="cert-score-text" class="text-base font-black text-emerald-600">95%</div>
+          </div>
+          <div>
+            <span class="text-slate-500">Fecha:</span>
+            <div id="cert-date-text" class="text-base font-black text-slate-800">20/10/2026</div>
+          </div>
+        </div>
+
+        <p class="text-[11px] text-slate-500 italic">
+          Cuestionario Oficial de Tránsito y Seguridad Vial • Municipalidad de Florencio Varela
+        </p>
+      </div>
+
+      <div class="flex gap-2 mt-4">
+        <button onclick="window.print()" class="flex-1 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition flex items-center justify-center gap-1.5">
+          <span>🖨️ Imprimir / Guardar PDF</span>
+        </button>
+        <button onclick="closeCertificateModal()" class="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Footer con info reglamentaria y créditos -->
-  <footer class="mt-auto border-t border-slate-200 bg-white py-6">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-slate-500 space-y-1">
-      <p class="font-medium text-slate-700">Material de estudio para Examen Teórico – Licencia de Conducir</p>
+  <footer class="mt-auto border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-6 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-slate-500 dark:text-slate-400 space-y-1">
+      <p class="font-medium text-slate-700 dark:text-slate-300">Material de estudio para Examen Teórico – Licencia de Conducir</p>
       <p>Municipalidad de Florencio Varela • 25 de Mayo nº 2725 (C.P. 1888) • Tel: (54 11) 4237 1601 • www.varela.gob.ar</p>
-      <p class="text-[11px] text-slate-400 pt-1">Incluye síntesis de voz Web Speech API, práctica interactiva y autoevaluación.</p>
+      <p class="text-[11px] text-slate-400 dark:text-slate-500 pt-1">Funciona 100% Offline (PWA) • Síntesis de voz Web Speech API • Simulador con Banco de Errores.</p>
     </div>
   </footer>
 
