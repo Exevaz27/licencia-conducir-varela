@@ -7,6 +7,18 @@ let currentQuestions = [...questionsData];
 let filteredQuestions = [...questionsData];
 let currentTab = 'read';
 let onlySignsFilter = false;
+let hideLearnedFilter = false;
+
+// Almacenamiento de Preguntas Aprendidas (LocalStorage)
+let learnedQuestions = new Set();
+try {
+  const saved = localStorage.getItem('varela_learned_questions');
+  if (saved) {
+    learnedQuestions = new Set(JSON.parse(saved));
+  }
+} catch (e) {
+  console.error('Error cargando preguntas aprendidas:', e);
+}
 
 // Estado de Síntesis de Voz
 let synth = window.speechSynthesis;
@@ -14,8 +26,9 @@ let availableVoices = [];
 let selectedVoice = null;
 let speechRate = 1.0;
 let isSpeaking = false;
+let isAudioPaused = false;
 let isContinuousPlaying = false;
-let continuousIndex = 0;
+let currentAudioIndex = 0; // Índice en filteredQuestions
 let currentActiveCardId = null;
 
 // Estado del Quiz (Modo Práctica)
@@ -37,7 +50,8 @@ let flashcardIsFlipped = false;
 // ========================================================
 document.addEventListener('DOMContentLoaded', () => {
   initSpeechVoices();
-  renderQuestionsList();
+  updateLearnedBadge();
+  filterQuestions();
   initFlashcard();
 });
 
@@ -51,14 +65,14 @@ function initSpeechVoices() {
   }
 
   const loadVoices = () => {
-    availableVoices = synth.getVoices().filter(v => v.lang.startsWith('es'));
+    const allVoices = synth.getVoices();
+    availableVoices = allVoices.filter(v => v.lang.startsWith('es'));
     const select = document.getElementById('audio-voice-select');
     if (!select) return;
 
     select.innerHTML = '';
     if (availableVoices.length === 0) {
-      // Si no hay filtro específico de español, permitir todas las voces
-      availableVoices = synth.getVoices();
+      availableVoices = allVoices;
     }
 
     // Preferir voz en español de Argentina o por defecto
@@ -97,6 +111,50 @@ function changeVoice(voiceIdx) {
 
 function changeAudioSpeed(val) {
   speechRate = parseFloat(val) || 1.0;
+}
+
+// ========================================================
+// GESTIÓN DE PREGUNTAS APRENDIDAS ("YA LA SÉ")
+// ========================================================
+function toggleLearned(id, event) {
+  if (event) event.stopPropagation();
+
+  if (learnedQuestions.has(id)) {
+    learnedQuestions.delete(id);
+  } else {
+    learnedQuestions.add(id);
+  }
+
+  try {
+    localStorage.setItem('varela_learned_questions', JSON.stringify([...learnedQuestions]));
+  } catch (e) {
+    console.error('Error guardando en localStorage:', e);
+  }
+
+  updateLearnedBadge();
+  filterQuestions();
+}
+
+function updateLearnedBadge() {
+  const badge = document.getElementById('learned-count-badge');
+  if (badge) {
+    badge.innerText = learnedQuestions.size;
+  }
+}
+
+function toggleHideLearned() {
+  hideLearnedFilter = !hideLearnedFilter;
+  const btn = document.getElementById('toggle-hide-learned-btn');
+  const icon = document.getElementById('hide-learned-icon');
+  
+  if (hideLearnedFilter) {
+    btn.className = 'px-3 py-2.5 rounded-xl border border-brand-500 text-xs sm:text-sm font-bold bg-brand-50 text-brand-700 whitespace-nowrap transition flex items-center gap-1.5 shadow-sm';
+    icon.innerText = '🙈';
+  } else {
+    btn.className = 'px-3 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm font-semibold bg-slate-50 hover:bg-slate-100 text-slate-700 whitespace-nowrap transition flex items-center gap-1.5';
+    icon.innerText = '👁️';
+  }
+  filterQuestions();
 }
 
 // ========================================================
@@ -153,36 +211,49 @@ function renderQuestionsList() {
       <div class="col-span-full py-12 text-center bg-white rounded-3xl border border-slate-200">
         <div class="text-4xl mb-3">🔍</div>
         <h3 class="text-lg font-bold text-slate-800">No se encontraron preguntas</h3>
-        <p class="text-sm text-slate-500 mt-1">Prueba con otra palabra clave o selecciona "Todas las categorías".</p>
+        <p class="text-sm text-slate-500 mt-1">Prueba cambiando los filtros o desactivando "Ocultar las que ya sé".</p>
       </div>
     `;
     return;
   }
 
-  filteredQuestions.forEach((q) => {
+  filteredQuestions.forEach((q, idx) => {
+    const isLearned = learnedQuestions.has(q.id);
     const card = document.createElement('div');
     card.id = `card-q-${q.id}`;
-    card.className = 'bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between';
+    card.className = `bg-white rounded-2xl p-5 border shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between ${
+      isLearned ? 'card-learned border-slate-200/60' : 'border-slate-200/80'
+    }`;
 
     const signalHtml = getSignalSvg(q.id);
 
     card.innerHTML = `
       <div>
         <div class="flex items-center justify-between gap-2 mb-3">
-          <div class="flex items-center gap-2">
-            <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 font-black text-xs flex items-center justify-center shrink-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="w-7 h-7 rounded-lg ${isLearned ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'} font-black text-xs flex items-center justify-center shrink-0">
               #${q.id}
             </span>
             <span class="badge-tag bg-slate-100 text-slate-600 text-[11px] font-semibold">
               ${q.category}
             </span>
+            ${isLearned ? '<span class="badge-tag bg-emerald-100 text-emerald-800 text-[10px] font-bold">✓ Ya la sé</span>' : ''}
           </div>
 
-          <!-- Botón de Audio Individual -->
-          <button onclick="speakQuestionCard(${q.id})" id="audio-btn-${q.id}" class="p-2 rounded-xl bg-slate-50 hover:bg-brand-50 text-slate-500 hover:text-brand-600 transition flex items-center gap-1 text-xs font-semibold" title="Escuchar en voz alta">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clip-rule="evenodd"/></svg>
-            <span class="hidden sm:inline">Escuchar</span>
-          </button>
+          <!-- Acciones de Tarjeta: Botón "Ya la sé" y Audio -->
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button onclick="toggleLearned(${q.id}, event)" class="p-2 rounded-xl ${isLearned ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100'} transition text-xs font-semibold" title="${isLearned ? 'Desmarcar' : 'Marcar como ya aprendida'}">
+              <svg class="w-4 h-4" fill="${isLearned ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            </button>
+
+            <!-- Botón de Audio Individual -->
+            <button onclick="speakQuestionCard(${q.id})" id="audio-btn-${q.id}" class="p-2 rounded-xl bg-slate-50 hover:bg-brand-50 text-slate-600 hover:text-brand-600 transition flex items-center gap-1 text-xs font-semibold" title="Escuchar en voz alta">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clip-rule="evenodd"/></svg>
+              <span class="hidden sm:inline">Escuchar</span>
+            </button>
+          </div>
         </div>
 
         <!-- Pregunta -->
@@ -215,6 +286,10 @@ function filterQuestions() {
   const catVal = document.getElementById('category-filter').value;
 
   filteredQuestions = questionsData.filter(q => {
+    // Filtro ocultar las que ya sé
+    if (hideLearnedFilter && learnedQuestions.has(q.id)) {
+      return false;
+    }
     // Filtro por categoría
     if (catVal !== 'all' && q.category !== catVal) {
       return false;
@@ -248,7 +323,7 @@ function toggleSignsFilter() {
 }
 
 // ========================================================
-// SISTEMA DE SÍNTESIS DE VOZ (TEXT-TO-SPEECH)
+// SISTEMA DE SÍNTESIS DE VOZ Y REPRODUCTOR FLOTANTE
 // ========================================================
 function speakText(text, onEndCallback = null) {
   if (!('speechSynthesis' in window)) {
@@ -257,6 +332,7 @@ function speakText(text, onEndCallback = null) {
   }
 
   synth.cancel(); // Detener reproducción previa
+  isAudioPaused = false;
 
   const cleanText = text
     .replace(/[\[\]]/g, '')
@@ -287,12 +363,27 @@ function speakText(text, onEndCallback = null) {
   synth.speak(utterance);
 }
 
+// Reproducir pregunta individual
 function speakQuestionCard(id) {
-  stopContinuousPlay();
-  const q = questionsData.find(item => item.id === id);
-  if (!q) return;
+  const idx = filteredQuestions.findIndex(item => item.id === id);
+  if (idx !== -1) {
+    currentAudioIndex = idx;
+  }
+  playCurrentQuestionAudio();
+}
 
-  highlightCard(id);
+// Reproducir la pregunta actual según currentAudioIndex
+function playCurrentQuestionAudio() {
+  if (filteredQuestions.length === 0) return;
+  if (currentAudioIndex < 0) currentAudioIndex = 0;
+  if (currentAudioIndex >= filteredQuestions.length) {
+    stopAudio();
+    return;
+  }
+
+  const q = filteredQuestions[currentAudioIndex];
+  highlightCard(q.id);
+  showFloatingPlayer(q);
 
   const titleEl = document.getElementById('player-current-title');
   const badgeEl = document.getElementById('player-status-badge');
@@ -304,14 +395,154 @@ function speakQuestionCard(id) {
 
   const fullText = `Pregunta número ${q.id}. ${q.question}. Respuesta: ${q.answer}`;
   speakText(fullText, () => {
-    clearHighlightCard();
-    if (badgeEl) {
-      badgeEl.innerText = 'Listo';
-      badgeEl.className = 'px-2 py-0.5 rounded-full text-[11px] font-semibold bg-white/20 text-white';
+    if (isContinuousPlaying) {
+      currentAudioIndex++;
+      if (currentAudioIndex < filteredQuestions.length) {
+        setTimeout(playCurrentQuestionAudio, 600);
+      } else {
+        stopAudio();
+      }
+    } else {
+      if (badgeEl) {
+        badgeEl.innerText = 'Listo';
+        badgeEl.className = 'px-2 py-0.5 rounded-full text-[11px] font-semibold bg-white/20 text-white';
+      }
+      updateFloatingPlayState(false);
     }
   });
+
+  updateFloatingPlayState(true);
 }
 
+// Botón Siguiente en Reproductor
+function nextAudioQuestion() {
+  if (filteredQuestions.length === 0) return;
+  if (currentAudioIndex < filteredQuestions.length - 1) {
+    currentAudioIndex++;
+  } else {
+    currentAudioIndex = 0; // Regresar al inicio
+  }
+  playCurrentQuestionAudio();
+}
+
+// Botón Anterior en Reproductor
+function prevAudioQuestion() {
+  if (filteredQuestions.length === 0) return;
+  if (currentAudioIndex > 0) {
+    currentAudioIndex--;
+  } else {
+    currentAudioIndex = filteredQuestions.length - 1;
+  }
+  playCurrentQuestionAudio();
+}
+
+// Marcar como aprendida la pregunta actual y pasar a la siguiente de inmediato
+function markCurrentAsLearnedAndNext() {
+  if (filteredQuestions.length === 0) return;
+  const q = filteredQuestions[currentAudioIndex];
+  if (q) {
+    learnedQuestions.add(q.id);
+    try {
+      localStorage.setItem('varela_learned_questions', JSON.stringify([...learnedQuestions]));
+    } catch (e) {}
+    updateLearnedBadge();
+  }
+
+  // Si está activado "Ocultar aprendidas", refiltrar
+  if (hideLearnedFilter) {
+    filterQuestions();
+    // Si no quedan preguntas
+    if (filteredQuestions.length === 0) {
+      stopAudio();
+      alert('¡Excelente! Has marcado todas las preguntas filtradas como aprendidas.');
+      return;
+    }
+    if (currentAudioIndex >= filteredQuestions.length) {
+      currentAudioIndex = 0;
+    }
+  } else {
+    // Si no está ocultando, avanzar al siguiente índice
+    if (currentAudioIndex < filteredQuestions.length - 1) {
+      currentAudioIndex++;
+    } else {
+      currentAudioIndex = 0;
+    }
+    renderQuestionsList();
+  }
+
+  playCurrentQuestionAudio();
+}
+
+// Pausar / Reanudar Audio
+function togglePlayPauseAudio() {
+  if (!('speechSynthesis' in window)) return;
+
+  if (synth.speaking && !synth.paused) {
+    synth.pause();
+    isAudioPaused = true;
+    updateFloatingPlayState(false);
+  } else if (synth.paused) {
+    synth.resume();
+    isAudioPaused = false;
+    updateFloatingPlayState(true);
+  } else {
+    // Si estaba detenido, reproducir la actual
+    playCurrentQuestionAudio();
+  }
+}
+
+// Reproducción Continua
+function toggleContinuousPlay() {
+  if (isContinuousPlaying) {
+    stopContinuousPlay();
+  } else {
+    startContinuousPlay();
+  }
+}
+
+function startContinuousPlay() {
+  if (filteredQuestions.length === 0) return;
+  isContinuousPlaying = true;
+  currentAudioIndex = 0;
+
+  const btnText = document.getElementById('play-btn-text');
+  const playIcon = document.getElementById('play-icon');
+  const badgeEl = document.getElementById('player-status-badge');
+
+  if (btnText) btnText.innerText = 'Pausar Lectura';
+  if (playIcon) playIcon.innerHTML = `<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>`;
+  if (badgeEl) {
+    badgeEl.innerText = 'Lectura Continua Activa';
+    badgeEl.className = 'px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500 text-white animate-pulse';
+  }
+
+  playCurrentQuestionAudio();
+}
+
+function stopContinuousPlay() {
+  isContinuousPlaying = false;
+  synth.cancel();
+
+  const btnText = document.getElementById('play-btn-text');
+  const playIcon = document.getElementById('play-icon');
+  const badgeEl = document.getElementById('player-status-badge');
+
+  if (btnText) btnText.innerText = 'Reproducir Todo';
+  if (playIcon) playIcon.innerHTML = `<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>`;
+  if (badgeEl) {
+    badgeEl.innerText = 'Detenido';
+    badgeEl.className = 'px-2 py-0.5 rounded-full text-[11px] font-semibold bg-white/20 text-white';
+  }
+}
+
+function stopAudio() {
+  stopContinuousPlay();
+  synth.cancel();
+  clearHighlightCard();
+  updateFloatingPlayState(false);
+}
+
+// Resaltar tarjeta visualmente
 function highlightCard(id) {
   clearHighlightCard();
   currentActiveCardId = id;
@@ -330,80 +561,44 @@ function clearHighlightCard() {
   }
 }
 
-// Reproducción Continua (Modo Manos Libres)
-function toggleContinuousPlay() {
-  if (isContinuousPlaying) {
-    stopContinuousPlay();
+// ========================================================
+// CONTROLES DE LA BARRA FLOTANTE FIJA INFERIOR
+// ========================================================
+function showFloatingPlayer(q) {
+  const bar = document.getElementById('floating-audio-bar');
+  if (!bar) return;
+
+  bar.classList.add('visible');
+
+  const badgeEl = document.getElementById('floating-question-badge');
+  const textEl = document.getElementById('floating-question-text');
+  const statusEl = document.getElementById('floating-status-text');
+
+  if (badgeEl) badgeEl.innerText = `#${q.id}`;
+  if (textEl) textEl.innerText = q.question;
+  if (statusEl) statusEl.innerText = isContinuousPlaying ? 'Lectura Continua' : 'Reproduciendo';
+}
+
+function closeFloatingPlayer() {
+  stopAudio();
+  const bar = document.getElementById('floating-audio-bar');
+  if (bar) bar.classList.remove('visible');
+}
+
+function updateFloatingPlayState(playing) {
+  const icon = document.getElementById('floating-play-icon');
+  const label = document.getElementById('floating-play-label');
+  const statusEl = document.getElementById('floating-status-text');
+
+  if (playing) {
+    if (icon) icon.innerHTML = `<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>`;
+    if (label) label.innerText = 'Pausa';
+    if (statusEl) statusEl.innerText = isContinuousPlaying ? 'Lectura Continua' : 'Reproduciendo';
   } else {
-    startContinuousPlay();
+    if (icon) icon.innerHTML = `<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>`;
+    if (label) label.innerText = 'Reanudar';
+    if (statusEl) statusEl.innerText = 'En Pausa';
   }
-}
-
-function startContinuousPlay() {
-  if (filteredQuestions.length === 0) return;
-  isContinuousPlaying = true;
-  continuousIndex = 0;
-
-  const btnText = document.getElementById('play-btn-text');
-  const playIcon = document.getElementById('play-icon');
-  const badgeEl = document.getElementById('player-status-badge');
-
-  if (btnText) btnText.innerText = 'Pausar Lectura';
-  if (playIcon) playIcon.innerHTML = `<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>`;
-  if (badgeEl) {
-    badgeEl.innerText = 'Lectura Continua Activa';
-    badgeEl.className = 'px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500 text-white animate-pulse';
-  }
-
-  playNextInSequence();
-}
-
-function playNextInSequence() {
-  if (!isContinuousPlaying) return;
-
-  if (continuousIndex >= filteredQuestions.length) {
-    stopContinuousPlay();
-    const titleEl = document.getElementById('player-current-title');
-    if (titleEl) titleEl.innerText = 'Lectura de preguntas finalizada con éxito.';
-    return;
-  }
-
-  const q = filteredQuestions[continuousIndex];
-  highlightCard(q.id);
-
-  const titleEl = document.getElementById('player-current-title');
-  if (titleEl) titleEl.innerText = `[${continuousIndex + 1}/${filteredQuestions.length}] Pregunta #${q.id}: ${q.question}`;
-
-  const speechText = `Pregunta ${q.id}. ${q.question}. Respuesta: ${q.answer}`;
-  speakText(speechText, () => {
-    if (isContinuousPlaying) {
-      continuousIndex++;
-      setTimeout(playNextInSequence, 700); // Pequeña pausa natural entre preguntas
-    }
-  });
-}
-
-function stopContinuousPlay() {
-  isContinuousPlaying = false;
-  synth.cancel();
-  clearHighlightCard();
-
-  const btnText = document.getElementById('play-btn-text');
-  const playIcon = document.getElementById('play-icon');
-  const badgeEl = document.getElementById('player-status-badge');
-
-  if (btnText) btnText.innerText = 'Reproducir Todo';
-  if (playIcon) playIcon.innerHTML = `<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>`;
-  if (badgeEl) {
-    badgeEl.innerText = 'Detenido';
-    badgeEl.className = 'px-2 py-0.5 rounded-full text-[11px] font-semibold bg-white/20 text-white';
-  }
-}
-
-function stopAudio() {
-  stopContinuousPlay();
-  synth.cancel();
-  clearHighlightCard();
 }
 
 // ========================================================
@@ -601,7 +796,7 @@ function finishQuiz() {
   document.getElementById('results-correct-count').innerText = quizScoreCorrect;
   document.getElementById('results-incorrect-count').innerText = quizScoreIncorrect;
 
-  const passed = pct >= 80; // Criterio de aprobación estándar vial
+  const passed = pct >= 80;
   const badgeIcon = document.getElementById('results-badge-icon');
   const banner = document.getElementById('results-status-banner');
   const title = document.getElementById('results-title');
